@@ -6,10 +6,10 @@ using UnityEngine.UI;
 
 public class Spawner : MonoBehaviour
 {
-    public float timePlane, timeMissile, timeWave, timePlaneDown;
-    public GameObject planePrefab, planeDownPrefab, missilePrefab, ovniPrefab;
+    public float timePlane, timeMissile, timeWave, timePlaneDown, timeDrone;
+    public GameObject planePrefab, planeDownPrefab, missilePrefab, ovniPrefab, dronePrefab;
     public int numPlanes, numMissiles;
-    private float timePlaneReset, timeMissileReset, timePlaneDownReset;
+    private float timePlaneReset, timeMissileReset, timePlaneDownReset, timeDroneReset;
     [HideInInspector]
     public float timeResetWave;
     public Transform A, D, spawnOvni, ADown, DDown;
@@ -37,6 +37,7 @@ public class Spawner : MonoBehaviour
         timeMissileReset = timeMissile;
         timeResetWave = timeWave;
         timePlaneDownReset = timePlaneDown;
+        timeDroneReset = timeDrone;
     }
 
     private void Update() {
@@ -47,6 +48,7 @@ public class Spawner : MonoBehaviour
             timePlaneDown -= Time.deltaTime;
             timeMissile -= Time.deltaTime;
             timeWave -= Time.deltaTime;
+            timeDrone -= Time.deltaTime;
 
             if(timeWave > 0)
             {
@@ -59,11 +61,13 @@ public class Spawner : MonoBehaviour
                     SpawnMissile();
                 }
                 SpawnPlane();
+                SpawnDrone();
                
             }else{
                 soldier = GameObject.FindObjectsOfType<Soldier>();
                 Miss = GameObject.FindObjectsOfType<Missile>();
                 plan = GameObject.FindObjectsOfType<Plane>();
+                
 
                 if(soldier.Length == 0 && Miss.Length == 0 && plan.Length == 0 && !loseToSoldier && !ovniSpawn)
                 {
@@ -109,6 +113,23 @@ public class Spawner : MonoBehaviour
         if(MissileLose)
         {
             StartCoroutine(PanelLoserMissile());
+        }
+    }
+
+    void SpawnDrone()
+    {
+        if(timeDrone <= 0)
+        {
+            int rand = Random.Range(0, 2);
+            if (rand == 1)
+            {//spawn left
+                GameObject drone = Instantiate(dronePrefab, new Vector3(-7, Random.Range(0, 2.5f), 0), Quaternion.identity);
+            }
+            else
+            {//spawn right
+                GameObject drone = Instantiate(dronePrefab, new Vector3(7, Random.Range(0, 2.5f), 0), Quaternion.identity);
+            }
+            timeDrone = timeDroneReset;
         }
     }
 
@@ -225,6 +246,14 @@ public class Spawner : MonoBehaviour
             item.lose();
         }
         Debug.Log("Lose to soldier");
+    }
+
+    public void LoseToHealth()
+    {
+        Debug.Log("LoseToHealth");
+        GameOver.SetActive(true);
+        Cursor.visible = true;
+        loseGame = true;
     }
 
     public void LoseMissile()

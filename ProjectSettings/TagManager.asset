@@ -19,6 +19,9 @@ TagManager:
   - ADown
   - DDown
   - Boom
+  - Tank
+  - DroneBullet
+  - Drone
   layers:
   - Default
   - TransparentFX

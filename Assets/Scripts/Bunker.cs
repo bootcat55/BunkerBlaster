@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,6 +25,10 @@ public class Bunker : MonoBehaviour
     public int numBooms, ammunition;
     private int burst = 3;
     private int ModeShoot;
+    private float pushForce = 5f;
+
+    public int health;
+    //private Vector3 lastMousePosition;
 
     //Audio
     public AudioClip audioBullet;
@@ -36,6 +41,8 @@ public class Bunker : MonoBehaviour
         timeReset = time;
         UpdateText();
         enabledImageBoom();
+        //lastMousePosition = Input.mousePosition;
+
     }
     public void enabledImageBoom()
     {
@@ -62,13 +69,17 @@ public class Bunker : MonoBehaviour
 
         if(!spawner.loseGame && !pause && Time.timeScale == 1)
         {
-            lookDirection = Camera.main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * 10f);
-            lookAngle = Mathf.Atan2(cannon.position.y - lookDirection.y, cannon.position.x - lookDirection.x) * Mathf.Rad2Deg;
+            //if(Input.mousePosition != lastMousePosition) //cannon will only incline if the mouse itself is moving (cannon doesn't focus a point when tank moves)
+            //{
+                //lastMousePosition = Input.mousePosition;
+                lookDirection = Camera.main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * 10f);
+                lookAngle = Mathf.Atan2(cannon.position.y - lookDirection.y, cannon.position.x - lookDirection.x) * Mathf.Rad2Deg;
 
-            if((lookDirection.y >= limit.position.y))
-            {
-                cannon.rotation = Quaternion.Euler(new Vector3(0f, 0f, lookAngle + 90f));
-            }
+                if ((lookDirection.y >= limit.position.y))
+                {
+                    cannon.rotation = Quaternion.Euler(new Vector3(0f, 0f, lookAngle + 90f));
+                }
+            //}
 
             time -= Time.deltaTime;
             ammunitionText.text = ammunition.ToString("D4");
@@ -78,7 +89,11 @@ public class Bunker : MonoBehaviour
             }*/
 
             timeBurst -= Time.deltaTime;
-            
+
+            float horizontal_input = Input.GetAxis("Horizontal");
+
+            this.GetComponent<Rigidbody2D>().AddForce(new Vector2(horizontal_input*pushForce, 0f));
+
             if (Input.GetAxis("Mouse ScrollWheel") > 0f)
             {
                 if(ModeShoot >= 2)
@@ -219,5 +234,18 @@ public class Bunker : MonoBehaviour
         //{
             audioSource.PlayOneShot(audioBullet, volume);
         //}
+    }
+
+    private void OnTriggerEnter2D(Collider2D collider)
+    {
+        if (collider.gameObject.CompareTag("DroneBullet"))
+        {
+            Debug.Log("hit");
+            health--;
+            if (health <= 0)
+            {
+                spawner.LoseToHealth();
+            }
+        }
     }
 }
